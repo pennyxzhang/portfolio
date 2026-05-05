@@ -15,6 +15,7 @@ const ease = [0.25, 0.46, 0.45, 0.94] as const;
 const ZOOM_STEP = 25;
 const ZOOM_MIN = 25;
 const ZOOM_MAX = 300;
+const SWIPE_THRESHOLD = 50;
 
 export default function Lightbox({ images, index, onClose, onNav }: LightboxProps) {
   const total = images.length;
@@ -26,27 +27,26 @@ export default function Lightbox({ images, index, onClose, onNav }: LightboxProp
   const dragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
+  // Touch swipe state
+  const touchStart = useRef<number | null>(null);
+
   const prev = useCallback(() => onNav((index - 1 + total) % total), [index, total, onNav]);
   const next = useCallback(() => onNav((index + 1) % total), [index, total, onNav]);
   const zoomIn  = useCallback(() => setZoom(z => Math.min(z + ZOOM_STEP, ZOOM_MAX)), []);
   const zoomOut = useCallback(() => setZoom(z => Math.max(z - ZOOM_STEP, ZOOM_MIN)), []);
   const resetZoom = useCallback(() => setZoom(100), []);
 
-  // Reset zoom when image changes
   useEffect(() => { setZoom(100); }, [index]);
 
-  // After zoom changes, scroll to center so both edges are reachable
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || zoom <= 100) return;
-    // Small defer so the DOM has updated dimensions
     requestAnimationFrame(() => {
       el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
       el.scrollTop  = (el.scrollHeight - el.clientHeight) / 2;
     });
   }, [zoom]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -64,7 +64,6 @@ export default function Lightbox({ images, index, onClose, onNav }: LightboxProp
     };
   }, [onClose, prev, next, zoomIn, zoomOut, resetZoom]);
 
-  // Ctrl/Cmd + scroll to zoom
   useEffect(() => {
     const handler = (e: WheelEvent) => {
       if (!e.ctrlKey && !e.metaKey) return;
@@ -75,6 +74,7 @@ export default function Lightbox({ images, index, onClose, onNav }: LightboxProp
     return () => window.removeEventListener("wheel", handler);
   }, [zoomIn, zoomOut]);
 
+  // Mouse drag-to-pan
   function onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
     const el = scrollRef.current;
     if (!el || zoom <= 100) return;
@@ -89,6 +89,19 @@ export default function Lightbox({ images, index, onClose, onNav }: LightboxProp
     scrollRef.current.scrollTop  = dragStart.current.scrollTop  - (e.clientY - dragStart.current.y);
   }
   function stopDrag() { dragging.current = false; setIsDragging(false); }
+
+  // Touch swipe-to-navigate (only when not zoomed)
+  function onTouchStart(e: React.TouchEvent) {
+    if (zoom !== 100 || total <= 1) return;
+    touchStart.current = e.touches[0].clientX;
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchStart.current === null || zoom !== 100) return;
+    const delta = touchStart.current - e.changedTouches[0].clientX;
+    if (delta > SWIPE_THRESHOLD) next();
+    else if (delta < -SWIPE_THRESHOLD) prev();
+    touchStart.current = null;
+  }
 
   const isZoomed = zoom !== 100;
   const btnClass = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue";
@@ -123,7 +136,7 @@ export default function Lightbox({ images, index, onClose, onNav }: LightboxProp
         exit={{ scale: 0.96, opacity: 0 }}
         transition={{ duration: 0.18, ease }}
       >
-        {/* Scroll / pan area — image sits directly here, no centering wrapper */}
+        {/* Scroll / pan / swipe area */}
         <div
           ref={scrollRef}
           className="overflow-auto flex-1 select-none"
@@ -132,78 +145,80 @@ export default function Lightbox({ images, index, onClose, onNav }: LightboxProp
           onMouseMove={onMouseMove}
           onMouseUp={stopDrag}
           onMouseLeave={stopDrag}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
         >
           <img
             src={src}
             alt={`Image ${index + 1} of ${total}`}
             draggable={false}
             style={{
-              display:   "block",
-              // At 100%: constrain to viewport. At other zoom: width% of scroll container = correct scale.
-              width:     zoom === 100 ? "auto" : `${zoom}%`,
-              maxWidth:  zoom === 100 ? "min(88vw, 1400px)" : "none",
-              maxHeight: zoom === 100 ? "calc(90vh - 48px)"  : "none",
-              height:    "auto",
+              display:       "block",
+              width:         zoom === 100 ? "auto" : `${zoom}%`,
+              maxWidth:      zoom === 100 ? "min(88vw, 1400px)" : "none",
+              maxHeight:     zoom === 100 ? "calc(90vh - 48px)"  : "none",
+              height:        "auto",
               userSelect:    "none",
               pointerEvents: "none",
             }}
           />
         </div>
 
-        {/* Bottom bar */}
-        <div className="flex items-center justify-between px-4 py-2 bg-paper border-t-[2.5px] border-ink shrink-0 gap-4">
+        {/* Bottom bar: zoom + mobile nav + counter */}
+        <div className="flex items-center justify-between px-3 py-2 bg-paper border-t-[2.5px] border-ink shrink-0 gap-2">
+
+          {/* Zoom controls */}
           <div className="flex items-center gap-1">
-            <button
-              onClick={zoomOut}
-              disabled={zoom <= ZOOM_MIN}
-              aria-label="Zoom out"
-              className={`w-7 h-7 brutal-border flex items-center justify-center font-display font-700 text-sm hover:bg-ink hover:text-paper transition-colors duration-100 disabled:opacity-30 disabled:pointer-events-none ${btnClass}`}
-            >
+            <button onClick={zoomOut} disabled={zoom <= ZOOM_MIN} aria-label="Zoom out"
+              className={`w-7 h-7 brutal-border flex items-center justify-center font-display font-700 text-sm hover:bg-ink hover:text-paper transition-colors duration-100 disabled:opacity-30 disabled:pointer-events-none ${btnClass}`}>
               −
             </button>
-            <button
-              onClick={resetZoom}
-              aria-label="Reset zoom"
-              className={`min-w-[52px] h-7 brutal-border px-2 font-mono text-xs hover:bg-ink hover:text-paper transition-colors duration-100 ${btnClass}`}
-            >
+            <button onClick={resetZoom} aria-label="Reset zoom"
+              className={`min-w-[48px] h-7 brutal-border px-2 font-mono text-xs hover:bg-ink hover:text-paper transition-colors duration-100 ${btnClass}`}>
               {zoom}%
             </button>
-            <button
-              onClick={zoomIn}
-              disabled={zoom >= ZOOM_MAX}
-              aria-label="Zoom in"
-              className={`w-7 h-7 brutal-border flex items-center justify-center font-display font-700 text-sm hover:bg-ink hover:text-paper transition-colors duration-100 disabled:opacity-30 disabled:pointer-events-none ${btnClass}`}
-            >
+            <button onClick={zoomIn} disabled={zoom >= ZOOM_MAX} aria-label="Zoom in"
+              className={`w-7 h-7 brutal-border flex items-center justify-center font-display font-700 text-sm hover:bg-ink hover:text-paper transition-colors duration-100 disabled:opacity-30 disabled:pointer-events-none ${btnClass}`}>
               +
             </button>
           </div>
 
+          {/* Mobile nav arrows — only shown on small screens */}
           {total > 1 && (
-            <span className="font-mono text-xs text-ink/40 shrink-0">
+            <div className="flex items-center gap-1 sm:hidden">
+              <button onClick={prev} aria-label="Previous image"
+                className={`w-8 h-7 brutal-border flex items-center justify-center font-display font-700 text-sm hover:bg-ink hover:text-paper transition-colors duration-100 ${btnClass}`}>
+                ←
+              </button>
+              <span className="font-mono text-xs text-ink/40 w-12 text-center">
+                {String(index + 1).padStart(2, "0")}/{String(total).padStart(2, "0")}
+              </span>
+              <button onClick={next} aria-label="Next image"
+                className={`w-8 h-7 brutal-border flex items-center justify-center font-display font-700 text-sm hover:bg-ink hover:text-paper transition-colors duration-100 ${btnClass}`}>
+                →
+              </button>
+            </div>
+          )}
+
+          {/* Desktop counter */}
+          {total > 1 && (
+            <span className="hidden sm:inline font-mono text-xs text-ink/40 shrink-0">
               {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
             </span>
           )}
         </div>
       </motion.div>
 
-      {/* Prev */}
+      {/* Desktop-only side arrows */}
       {total > 1 && (
-        <button
-          onClick={prev}
-          aria-label="Previous image"
-          className={`absolute left-4 sm:left-6 z-20 w-11 h-11 brutal-border bg-paper hover:bg-ink hover:text-paper transition-colors duration-150 flex items-center justify-center font-display font-700 text-lg ${btnClass}`}
-        >
+        <button onClick={prev} aria-label="Previous image"
+          className={`hidden sm:flex absolute left-6 z-20 w-11 h-11 brutal-border bg-paper hover:bg-ink hover:text-paper transition-colors duration-150 items-center justify-center font-display font-700 text-lg ${btnClass}`}>
           ←
         </button>
       )}
-
-      {/* Next */}
       {total > 1 && (
-        <button
-          onClick={next}
-          aria-label="Next image"
-          className={`absolute right-4 sm:right-6 z-20 w-11 h-11 brutal-border bg-paper hover:bg-ink hover:text-paper transition-colors duration-150 flex items-center justify-center font-display font-700 text-lg ${btnClass}`}
-        >
+        <button onClick={next} aria-label="Next image"
+          className={`hidden sm:flex absolute right-6 z-20 w-11 h-11 brutal-border bg-paper hover:bg-ink hover:text-paper transition-colors duration-150 items-center justify-center font-display font-700 text-lg ${btnClass}`}>
           →
         </button>
       )}
