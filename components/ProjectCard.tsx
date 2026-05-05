@@ -75,7 +75,7 @@ export default function ProjectCard({ project, index }: Props) {
 
               {/* Role + tools */}
               <div className="text-right shrink-0">
-                <p className="text-xs font-sans font-600 text-ink flex items-center gap-1 justify-end"><span className="text-blue text-xs">✳</span>{project.role}</p>
+                <p className="text-xs font-sans font-600 text-ink flex items-center gap-1 justify-end"><span className="text-blue text-xs">{"✳︎"}</span>{project.role}</p>
                 <p className="text-xs font-sans text-ink/50 mt-0.5">{project.tools.join(", ")}</p>
               </div>
             </div>

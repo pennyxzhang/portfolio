@@ -17,7 +17,7 @@ export default function Nav() {
           className="flex items-center gap-1.5 group px-1"
         >
           <span className="font-display font-700 text-xl text-blue leading-none group-hover:rotate-45 transition-transform duration-200 inline-block">
-            ✳
+            {"✳︎"}
           </span>
           <span className="font-display font-700 text-sm tracking-widest leading-none bg-ink text-paper px-3 py-1.5 group-hover:bg-yellow group-hover:text-ink transition-colors duration-150">
             PZ

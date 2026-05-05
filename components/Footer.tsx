@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div>
           <p className="font-display font-700 text-lg flex items-center gap-2">
-            <span className="text-blue">✳</span>
+            <span className="text-blue">{"✳︎"}</span>
             Penny Zhang
           </p>
           <p className="text-sm text-ink/60 mt-1">Product Designer · Sydney, AU</p>

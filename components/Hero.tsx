@@ -84,14 +84,14 @@ export default function Hero() {
 
         {/* Decorative marks — positioned over the name block area */}
         {/* Yellow ✦ star — sits over the "NN" in PENNY */}
-        <Mark className="hidden sm:block top-[6%] left-[28%]" delay={0.85} rotation={15}>
+        <Mark className="block top-[4%] left-[52%] sm:top-[6%] sm:left-[28%]" delay={0.85} rotation={15}>
           <motion.span
             className="text-yellow font-display font-700 text-3xl sm:text-5xl leading-none drop-shadow-[0_0_0_#0A0A0A] block"
             style={{ WebkitTextStroke: "1.5px #0A0A0A" }}
             animate={{ rotate: reduceMotion ? 0 : 360 }}
             transition={{ repeat: reduceMotion ? 0 : Infinity, duration: 5, ease: "linear" }}
           >
-            ✦
+            {"✦︎"}
           </motion.span>
         </Mark>
 

@@ -2,15 +2,15 @@
 
 const ITEMS = [
   "PRODUCT DESIGNER",
-  "✦",
+  "✦︎",
   "SYDNEY AU",
-  "✦",
+  "✦︎",
   "OPEN TO WORK",
-  "✦",
+  "✦︎",
   "UX & UI",
-  "✦",
+  "✦︎",
   "FROM RESEARCH TO PIXEL",
-  "✦",
+  "✦︎",
 ];
 
 // Doubled for seamless loop

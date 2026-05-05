@@ -13,7 +13,7 @@ export default function SideProjects() {
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <span className="font-display font-700 text-base text-blue leading-none">✳</span>
+        <span className="font-display font-700 text-base text-blue leading-none">{"✳︎"}</span>
         <h2 className="font-display font-700 text-sm tracking-widest uppercase">
           Side Projects
         </h2>
@@ -36,7 +36,7 @@ export default function SideProjects() {
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
           >
-            <span className="font-display font-700 text-3xl text-blue/20">✳</span>
+            <span className="font-display font-700 text-3xl text-blue/20">{"✳︎"}</span>
             <span className="font-sans text-xs text-ink/40">Vibe coding experiment</span>
           </motion.div>
         ))}

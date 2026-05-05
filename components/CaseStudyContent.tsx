@@ -82,7 +82,9 @@ export default function CaseStudyContent({ project }: { project: Project }) {
               src={project.coverImage}
               alt={project.title}
               fill
+              sizes="100vw"
               className="object-cover"
+              style={{ objectPosition: project.coverImagePosition ?? "center" }}
               priority
             />
           ) : (

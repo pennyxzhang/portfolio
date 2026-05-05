@@ -18,7 +18,7 @@ export default function FeaturedProjects() {
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <span className="font-display font-700 text-base text-blue leading-none">✳</span>
+        <span className="font-display font-700 text-base text-blue leading-none">{"✳︎"}</span>
         <h2 className="font-display font-700 text-sm tracking-widest uppercase">
           Selected Work
         </h2>

@@ -14,6 +14,7 @@ export type Project = {
   outcome: string;
   client?: string;
   coverImage?: string;
+  coverImagePosition?: string;
   thumbnailImage?: string;
   processImages?: string[];
   processBackground?: string;
@@ -132,8 +133,9 @@ export const projects: Project[] = [
     year: "2022",
     behanceUrl: "https://www.behance.net/gallery/190835123/Ahrend",
     accentColor: "#0A0A0A",
-    coverImage: "/images/Ahrend/Ahrend_1.png",
-    thumbnailImage: "/images/Ahrend/Ahrend_thumbnail.png",
+    coverImage: "/images/Ahrend/Ahrend_hero.png",
+    coverImagePosition: "right",
+    thumbnailImage: "/images/Ahrend/Ahrend_1.png",
     processBackground: "#FAFBFC",
     processImages: [
       "/images/Ahrend/Ahrend_2.png",
