@@ -23,7 +23,7 @@ export default function SideProjects() {
 
       {/* Placeholder grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {[0, 1, 2].map((i) => (
+        {[0].map((i) => (
           <motion.div
             key={i}
             className="brutal-border h-48 flex flex-col items-center justify-center gap-2 bg-paper opacity-40"
